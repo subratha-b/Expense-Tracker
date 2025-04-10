@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Manage Budgets</h2>
+    
+    <div class="budget-form-container">
+        <h3>Add/Edit Budget</h3>
+        <form method="POST" class="budget-form">
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="amount">Amount</label>
+                <input type="number" id="amount" name="amount" step="0.01" min="0" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="month">Month</label>
+                    <select id="month" name="month" required>
+                        {% for month in months %}
+                            <option value="{{ month }}" {% if month == datetime.now().month %}selected{% endif %}>{{ month }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="year">Year</label>
+                    <input type="number" id="year" name="year" min="2000" max="2100" value="{{ current_year }}" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="alert_threshold">Alert When Remaining (%)</label>
+                <input type="number" id="alert_threshold" name="alert_threshold" min="1" max="100" value="10">
+            </div>
+            
+            <button type="submit" class="button">Save Budget</button>
+        </form>
+    </div>
+    
+    <div class="budget-list">
+        <h3>Your Budgets</h3>
+        
+        {% for group, budgets in budget_groups.items() %}
+            <div class="budget-group">
+                <h4>{{ budgets[0].month }}/{{ budgets[0].year }}</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Alert At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for budget in budgets %}
+                            <tr>
+                                <td>{{ budget.category }}</td>
+                                <td>${{ "%.2f"|format(budget.amount) }}</td>
+                                <td>{{ budget.alert_threshold }}%</td>
+                                <td>
+                                    <a href="#" class="edit-budget" data-id="{{ budget.id }}" 
+                                       data-category="{{ budget.category }}" 
+                                       data-amount="{{ budget.amount }}"
+                                       data-month="{{ budget.month }}"
+                                       data-year="{{ budget.year }}"
+                                       data-threshold="{{ budget.alert_threshold }}">Edit</a>
+                                    <a href="{{ url_for('delete_budget', id=budget.id) }}" class="delete">Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No budgets set yet.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

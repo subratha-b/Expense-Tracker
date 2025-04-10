@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Reports</h2>
+    
+    <div class="report-controls">
+        <form method="GET" class="month-selector">
+            <select name="month">
+                {% for month_num, year in months %}
+                    <option value="{{ month_num }}" {% if month_num == selected_month and year == selected_year %}selected{% endif %}>
+                        {{ datetime(year=year, month=month_num, day=1).strftime('%B %Y') }}
+                    </option>
+                {% endfor %}
+            </select>
+            <select name="year">
+                {% for year in range(datetime.now().year - 5, datetime.now().year + 1) %}
+                    <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="button">View Report</button>
+        </form>
+    </div>
+    
+    <div class="report-summary">
+        <div class="summary-card">
+            <h3>Total Budget</h3>
+            <p class="amount">₹{{ "%.2f"|format(total_budget) }}</p>
+        </div>
+        <div class="summary-card">
+            <h3>Total Spent</h3>
+            <p class="amount">₹{{ "%.2f"|format(total_spent) }}</p>
+        </div>
+        <div class="summary-card">
+            <h3>Remaining</h3>
+            <p class="amount">₹{{ "%.2f"|format(total_budget - total_spent) }}</p>
+        </div>
+    </div>
+    
+    <h3>Category Breakdown</h3>
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Budget</th>
+                <th>Spent</th>
+                <th>Remaining</th>
+                <th>% Spent</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in category_data %}
+                <tr>
+                    <td>{{ category.name }}</td>
+                    <td>₹{{ "%.2f"|format(category.budget) }}</td>
+                    <td>₹{{ "%.2f"|format(category.spent) }}</td>
+                    <td>₹{{ "%.2f"|format(category.remaining) }}</td>
+                    <td>
+                        <div class="percentage-bar">
+                            <div class="bar {% if category.percentage > 100 %}over-limit{% endif %}" 
+                                 data-width="{{ category.percentage }}">
+                                {{ "%.1f"|format(category.percentage) }}%
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('.bar').forEach(bar => {
+                const width = bar.getAttribute('data-width');
+                bar.style.width = width + '%';
+            });
+        });
+    </script>
+{% endblock %}
